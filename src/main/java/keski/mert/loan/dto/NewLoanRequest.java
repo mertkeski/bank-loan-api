@@ -5,7 +5,7 @@ import keski.mert.loan.validation.ValidNumberOfInstallments;
 
 import java.math.BigDecimal;
 
-public record LoanRequest(
+public record NewLoanRequest(
         @NotNull(message = "customerId is required")
         Long customerId,
 

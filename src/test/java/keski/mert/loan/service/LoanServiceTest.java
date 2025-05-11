@@ -1,6 +1,6 @@
 package keski.mert.loan.service;
 
-import keski.mert.loan.dto.LoanRequest;
+import keski.mert.loan.dto.NewLoanRequest;
 import keski.mert.loan.dto.NewLoanResponse;
 import keski.mert.loan.exception.CustomerNotFoundException;
 import keski.mert.loan.model.Customer;
@@ -31,13 +31,13 @@ class LoanServiceTest {
     @InjectMocks
     private LoanService loanService;
 
-    private LoanRequest loanRequest;
+    private NewLoanRequest newLoanRequest;
     private Customer customer;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        loanRequest = new LoanRequest(
+        newLoanRequest = new NewLoanRequest(
                 1L,
                 new BigDecimal("0.15"),
                 new BigDecimal("5000"),
@@ -53,7 +53,7 @@ class LoanServiceTest {
     void createLoan_shouldThrowException_whenCustomerNotFound() {
         when(customerRepository.findById(anyLong())).thenReturn(Optional.empty());
         assertThrows(CustomerNotFoundException.class,
-                () -> loanService.createLoan(loanRequest));
+                () -> loanService.createLoan(newLoanRequest));
     }
 
     @Test
@@ -62,13 +62,13 @@ class LoanServiceTest {
         when(customerRepository.save(any(Customer.class))).thenReturn(customer);
         when(loanRepository.save(any(Loan.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        NewLoanResponse response = loanService.createLoan(loanRequest);
+        NewLoanResponse response = loanService.createLoan(newLoanRequest);
 
         System.out.println(response);
 
         assertNotNull(response);
         assertEquals(1L, response.customerId());
-        assertEquals(loanRequest.loanAmount(), response.loanAmount());
+        assertEquals(newLoanRequest.loanAmount(), response.loanAmount());
         assertEquals(12, response.installments().size());
 
         assertNotNull(response.installments().getFirst().dueDate());

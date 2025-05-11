@@ -1,7 +1,7 @@
 package keski.mert.loan.service;
 
 import jakarta.transaction.Transactional;
-import keski.mert.loan.dto.LoanRequest;
+import keski.mert.loan.dto.NewLoanRequest;
 import keski.mert.loan.dto.NewLoanResponse;
 import keski.mert.loan.exception.CustomerNotFoundException;
 import keski.mert.loan.exception.InsufficientCreditLimitException;
@@ -43,7 +43,7 @@ public class LoanService {
      * @throws InsufficientCreditLimitException if the customer does not have enough credit
      */
     @Transactional
-    public NewLoanResponse createLoan(LoanRequest request) {
+    public NewLoanResponse createLoan(NewLoanRequest request) {
         Customer customer = customerRepository.findById(request.customerId())
                 .orElseThrow(CustomerNotFoundException::new);
 
@@ -88,13 +88,13 @@ public class LoanService {
     /**
      * Calculates the amount to be paid for each installment based on the loan amount, interest rate, and number of installments.
      *
-     * @param loanRequest the loan request containing the loan amount, interest rate, and number of installments
+     * @param newLoanRequest the loan request containing the loan amount, interest rate, and number of installments
      * @return the amount to be paid for each installment
      */
-    private BigDecimal calculateInstallmentAmount(LoanRequest loanRequest) {
-        BigDecimal loanAmount = loanRequest.loanAmount();
-        BigDecimal interestRate = loanRequest.interestRate();
-        Integer numberOfInstallments = loanRequest.numberOfInstallments();
+    private BigDecimal calculateInstallmentAmount(NewLoanRequest newLoanRequest) {
+        BigDecimal loanAmount = newLoanRequest.loanAmount();
+        BigDecimal interestRate = newLoanRequest.interestRate();
+        Integer numberOfInstallments = newLoanRequest.numberOfInstallments();
 
         BigDecimal totalRepayment = loanAmount.multiply(BigDecimal.ONE.add(interestRate));
         return totalRepayment.divide(BigDecimal.valueOf(numberOfInstallments), 2, RoundingMode.HALF_UP);

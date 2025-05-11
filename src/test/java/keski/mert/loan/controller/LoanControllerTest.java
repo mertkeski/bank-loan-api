@@ -1,7 +1,7 @@
 package keski.mert.loan.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import keski.mert.loan.dto.LoanRequest;
+import keski.mert.loan.dto.NewLoanRequest;
 import keski.mert.loan.dto.NewLoanInstallmentResponse;
 import keski.mert.loan.dto.NewLoanResponse;
 import keski.mert.loan.exception.CustomerNotFoundException;
@@ -37,12 +37,12 @@ class LoanControllerTest {
 
     @Test
     void shouldCreateLoanSuccessfully() throws Exception {
-        LoanRequest request = new LoanRequest(1L, new BigDecimal("0.1"), new BigDecimal("6000"), 6);
+        NewLoanRequest request = new NewLoanRequest(1L, new BigDecimal("0.1"), new BigDecimal("6000"), 6);
         NewLoanInstallmentResponse installment1 = new NewLoanInstallmentResponse(new BigDecimal("2750.00"), LocalDate.now().plusMonths(1));
         NewLoanInstallmentResponse installment2 = new NewLoanInstallmentResponse(new BigDecimal("2750.00"), LocalDate.now().plusMonths(2));
         NewLoanResponse response = new NewLoanResponse(1L, new BigDecimal("5000"), List.of(installment1, installment2));
 
-        Mockito.when(loanService.createLoan(any(LoanRequest.class))).thenReturn(response);
+        Mockito.when(loanService.createLoan(any(NewLoanRequest.class))).thenReturn(response);
 
         mockMvc.perform(post("/v1/loans")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -55,9 +55,9 @@ class LoanControllerTest {
 
     @Test
     void shouldReturnNotFoundWhenCustomerDoesNotExist() throws Exception {
-        LoanRequest request = new LoanRequest(999L, new BigDecimal("0.1"), new BigDecimal("6000"), 6);
+        NewLoanRequest request = new NewLoanRequest(999L, new BigDecimal("0.1"), new BigDecimal("6000"), 6);
 
-        Mockito.when(loanService.createLoan(any(LoanRequest.class)))
+        Mockito.when(loanService.createLoan(any(NewLoanRequest.class)))
                 .thenThrow(new CustomerNotFoundException());
 
         mockMvc.perform(post("/v1/loans")

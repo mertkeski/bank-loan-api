@@ -1,7 +1,7 @@
 package keski.mert.loan.controller;
 
 import jakarta.validation.Valid;
-import keski.mert.loan.dto.LoanRequest;
+import keski.mert.loan.dto.NewLoanRequest;
 import keski.mert.loan.dto.NewLoanResponse;
 import keski.mert.loan.service.LoanService;
 import org.springframework.http.HttpStatus;
@@ -22,8 +22,8 @@ public class LoanController {
     }
 
     @PostMapping
-    public ResponseEntity<NewLoanResponse> createLoan(@RequestBody @Valid LoanRequest loanRequest) {
-        NewLoanResponse response = loanService.createLoan(loanRequest);
+    public ResponseEntity<NewLoanResponse> createLoan(@RequestBody @Valid NewLoanRequest newLoanRequest) {
+        NewLoanResponse response = loanService.createLoan(newLoanRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
