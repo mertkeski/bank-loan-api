@@ -1,8 +1,10 @@
 package keski.mert.loan.service;
 
+import keski.mert.loan.dto.LoanQueryResponse;
 import keski.mert.loan.dto.NewLoanRequest;
 import keski.mert.loan.dto.NewLoanResponse;
 import keski.mert.loan.exception.CustomerNotFoundException;
+import keski.mert.loan.exception.NoLoanFoundException;
 import keski.mert.loan.model.Customer;
 import keski.mert.loan.model.Loan;
 import keski.mert.loan.repository.CustomerRepository;
@@ -14,6 +16,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -76,6 +80,32 @@ class LoanServiceTest {
 
         verify(customerRepository).save(any(Customer.class));
         verify(loanRepository).save(any(Loan.class));
+    }
+
+    @Test
+    void shouldThrowNoLoanFoundExceptionWhenNoLoansForCustomer() {
+        Long customerId = 1L;
+        when(customerRepository.findById(customerId)).thenReturn(java.util.Optional.of(customer));
+        when(loanRepository.findByCustomer(customer)).thenReturn(Collections.emptyList());
+
+        assertThrows(NoLoanFoundException.class, () -> loanService.getLoansByCustomer(customerId));
+    }
+
+    @Test
+    void shouldReturnLoansWhenLoansExistForCustomer() {
+        Long customerId = 1L;
+        Loan loan = new Loan();
+        loan.setId(1L);
+        loan.setLoanAmount(new BigDecimal("5000"));
+        loan.setCustomer(customer);
+
+        when(customerRepository.findById(customerId)).thenReturn(java.util.Optional.of(customer));
+        when(loanRepository.findByCustomer(customer)).thenReturn(List.of(loan));
+
+        List<LoanQueryResponse> loans = loanService.getLoansByCustomer(customerId);
+
+        assertFalse(loans.isEmpty());
+        assertEquals(1, loans.size());
     }
 
 }

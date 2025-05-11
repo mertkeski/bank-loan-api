@@ -1,10 +1,12 @@
 package keski.mert.loan.service;
 
 import jakarta.transaction.Transactional;
+import keski.mert.loan.dto.LoanQueryResponse;
 import keski.mert.loan.dto.NewLoanRequest;
 import keski.mert.loan.dto.NewLoanResponse;
 import keski.mert.loan.exception.CustomerNotFoundException;
 import keski.mert.loan.exception.InsufficientCreditLimitException;
+import keski.mert.loan.exception.NoLoanFoundException;
 import keski.mert.loan.model.Customer;
 import keski.mert.loan.model.Installment;
 import keski.mert.loan.model.Loan;
@@ -121,6 +123,20 @@ public class LoanService {
         }
 
         return installments;
+    }
+
+    public List<LoanQueryResponse> getLoansByCustomer(Long customerId) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(CustomerNotFoundException::new);
+
+        List<Loan> loans = loanRepository.findByCustomer(customer);
+        if (loans.isEmpty()) {
+            throw new NoLoanFoundException();
+        }
+
+        return loans.stream()
+                .map(MapperUtil::toLoanQueryResponse)
+                .toList();
     }
 
 }
