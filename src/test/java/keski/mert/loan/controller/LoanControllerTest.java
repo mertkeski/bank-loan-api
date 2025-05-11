@@ -3,7 +3,8 @@ package keski.mert.loan.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import keski.mert.loan.dto.*;
 import keski.mert.loan.exception.CustomerNotFoundException;
-import keski.mert.loan.exception.NoLoanFoundException;
+import keski.mert.loan.exception.LoanNotFoundException;
+import keski.mert.loan.exception.NoLoanFoundForCustomerException;
 import keski.mert.loan.service.LoanService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,13 +72,13 @@ class LoanControllerTest {
     @Test
     void shouldReturnNoLoanFoundErrorWhenNoLoansExist() throws Exception {
         Long customerId = 1L;
-        when(loanService.getLoansByCustomer(customerId)).thenThrow(new NoLoanFoundException());
+        when(loanService.getLoansByCustomer(customerId)).thenThrow(new NoLoanFoundForCustomerException());
 
         mockMvc.perform(get("/v1/loans")
                         .param("customerId", customerId.toString()))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value(ErrorType.NO_LOAN_FOUND.getCode()))
-                .andExpect(jsonPath("$.message").value(ErrorType.NO_LOAN_FOUND.getMessage()));
+                .andExpect(jsonPath("$.code").value(ErrorType.NO_LOAN_FOUND_FOR_CUSTOMER.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorType.NO_LOAN_FOUND_FOR_CUSTOMER.getMessage()));
     }
 
     @Test
@@ -91,6 +92,32 @@ class LoanControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].customerId").value(customerId))
                 .andExpect(jsonPath("$[0].loanAmount").value(5000));
+    }
+
+    @Test
+    void shouldReturnInstallmentsForLoan() throws Exception {
+        Long loanId = 10L;
+        List<LoanQueryInstallmentResponse> mockInstallments = List.of(
+                new LoanQueryInstallmentResponse(new BigDecimal("1000"), LocalDate.now(), BigDecimal.ZERO, null, false)
+        );
+
+        when(loanService.getInstallmentsByLoanId(loanId)).thenReturn(mockInstallments);
+
+        mockMvc.perform(get("/v1/loans/{loanId}/installments", loanId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1));
+    }
+
+    @Test
+    void shouldReturnLoanNotFoundWhenLoanDoesNotExist() throws Exception {
+        Long loanId = 999L;
+
+        when(loanService.getInstallmentsByLoanId(loanId)).thenThrow(new LoanNotFoundException());
+
+        mockMvc.perform(get("/v1/loans/{loanId}/installments", loanId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value(ErrorType.LOAN_NOT_FOUND.getCode()))
+                .andExpect(jsonPath("$.message").value(ErrorType.LOAN_NOT_FOUND.getMessage()));
     }
 
 }

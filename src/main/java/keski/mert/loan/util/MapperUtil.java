@@ -25,11 +25,16 @@ public class MapperUtil {
     public static LoanQueryResponse toLoanQueryResponse(Loan loan) {
         List<Installment> installments = loan.getInstallments();
         List<LoanQueryInstallmentResponse> mappedInstallments = installments.stream()
-                .map(i -> new LoanQueryInstallmentResponse(i.getAmount(), i.getDueDate(), i.getPaidAmount(), i.getPaymentDate(), i.isPaid()))
+                .map(MapperUtil::toLoanQueryInstallmentResponse)
                 .toList();
 
         return new LoanQueryResponse(loan.getCustomer().getId(), loan.getLoanAmount(), loan.getNumberOfInstallments(),
                 loan.getCreatedDate(), loan.isPaid(), mappedInstallments);
+    }
+
+    public static LoanQueryInstallmentResponse toLoanQueryInstallmentResponse(Installment installment) {
+        return new LoanQueryInstallmentResponse(installment.getAmount(), installment.getDueDate(),
+                installment.getPaidAmount(), installment.getPaymentDate(), installment.isPaid());
     }
 
 }

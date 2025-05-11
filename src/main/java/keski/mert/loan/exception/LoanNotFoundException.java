@@ -2,11 +2,11 @@ package keski.mert.loan.exception;
 
 import keski.mert.loan.dto.ErrorType;
 
-public class NoLoanFoundException extends ApiException {
+public class LoanNotFoundException extends ApiException {
 
-    private static final ErrorType errorType = ErrorType.NO_LOAN_FOUND;
+    private static final ErrorType errorType = ErrorType.LOAN_NOT_FOUND;
 
-    public NoLoanFoundException() {
+    public LoanNotFoundException() {
         super(errorType.getCode(), errorType.getMessage(), errorType.getHttpStatus());
     }
 

@@ -4,7 +4,7 @@ import keski.mert.loan.dto.LoanQueryResponse;
 import keski.mert.loan.dto.NewLoanRequest;
 import keski.mert.loan.dto.NewLoanResponse;
 import keski.mert.loan.exception.CustomerNotFoundException;
-import keski.mert.loan.exception.NoLoanFoundException;
+import keski.mert.loan.exception.NoLoanFoundForCustomerException;
 import keski.mert.loan.model.Customer;
 import keski.mert.loan.model.Loan;
 import keski.mert.loan.repository.CustomerRepository;
@@ -88,7 +88,7 @@ class LoanServiceTest {
         when(customerRepository.findById(customerId)).thenReturn(java.util.Optional.of(customer));
         when(loanRepository.findByCustomer(customer)).thenReturn(Collections.emptyList());
 
-        assertThrows(NoLoanFoundException.class, () -> loanService.getLoansByCustomer(customerId));
+        assertThrows(NoLoanFoundForCustomerException.class, () -> loanService.getLoansByCustomer(customerId));
     }
 
     @Test

@@ -1,6 +1,7 @@
 package keski.mert.loan.controller;
 
 import jakarta.validation.Valid;
+import keski.mert.loan.dto.LoanQueryInstallmentResponse;
 import keski.mert.loan.dto.LoanQueryResponse;
 import keski.mert.loan.dto.NewLoanRequest;
 import keski.mert.loan.dto.NewLoanResponse;
@@ -31,6 +32,12 @@ public class LoanController {
     public ResponseEntity<List<LoanQueryResponse>> getLoansByCustomer(@RequestParam Long customerId) {
         List<LoanQueryResponse> loans = loanService.getLoansByCustomer(customerId);
         return ResponseEntity.ok(loans);
+    }
+
+    @GetMapping("/{loanId}/installments")
+    public ResponseEntity<List<LoanQueryInstallmentResponse>> getInstallmentsByLoanId(@PathVariable Long loanId) {
+        List<LoanQueryInstallmentResponse> installments = loanService.getInstallmentsByLoanId(loanId);
+        return ResponseEntity.ok(installments);
     }
 
 }
