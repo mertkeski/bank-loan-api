@@ -1,10 +1,7 @@
 package keski.mert.loan.service;
 
 import jakarta.transaction.Transactional;
-import keski.mert.loan.dto.LoanQueryInstallmentResponse;
-import keski.mert.loan.dto.LoanQueryResponse;
-import keski.mert.loan.dto.NewLoanRequest;
-import keski.mert.loan.dto.NewLoanResponse;
+import keski.mert.loan.dto.*;
 import keski.mert.loan.exception.CustomerNotFoundException;
 import keski.mert.loan.exception.InsufficientCreditLimitException;
 import keski.mert.loan.exception.LoanNotFoundException;
@@ -23,6 +20,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -148,6 +146,41 @@ public class LoanService {
         return loan.getInstallments().stream()
                 .map(MapperUtil::toLoanQueryInstallmentResponse)
                 .toList();
+    }
+
+    @Transactional
+    public PaymentResponse payLoanInstallments(Long loanId, PaymentRequest paymentRequest) {
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(LoanNotFoundException::new);
+
+        BigDecimal amountToPay = paymentRequest.amount();
+        BigDecimal totalAmountPaid = BigDecimal.ZERO;
+        int installmentsPaid = 0;
+
+        LocalDate threeMonthsFromNow = LocalDate.now().plusMonths(3).withDayOfMonth(1);
+        List<Installment> sortedInstallments = loan.getInstallments().stream()
+                .filter(i -> !i.isPaid())
+                .filter(i -> i.getDueDate().isBefore(threeMonthsFromNow))
+                .sorted(Comparator.comparing(Installment::getDueDate))
+                .toList();
+
+        for (Installment installment : sortedInstallments) {
+            if (amountToPay.compareTo(installment.getAmount()) >= 0) {
+                installment.setPaidAmount(installment.getAmount());
+                installment.setPaymentDate(LocalDate.now());
+                installment.setPaid(true);
+                amountToPay = amountToPay.subtract(installment.getAmount());
+                totalAmountPaid = totalAmountPaid.add(installment.getAmount());
+                installmentsPaid++;
+            } else {
+                break;
+            }
+        }
+
+        boolean isLoanPaidCompletely = loan.getInstallments().stream().allMatch(Installment::isPaid);
+        loan.setPaid(isLoanPaidCompletely);
+        loanRepository.save(loan);
+        return new PaymentResponse(installmentsPaid, totalAmountPaid, isLoanPaidCompletely);
     }
 
 }

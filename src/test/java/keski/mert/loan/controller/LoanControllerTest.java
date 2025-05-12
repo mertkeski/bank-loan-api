@@ -5,6 +5,8 @@ import keski.mert.loan.dto.*;
 import keski.mert.loan.exception.CustomerNotFoundException;
 import keski.mert.loan.exception.LoanNotFoundException;
 import keski.mert.loan.exception.NoLoanFoundForCustomerException;
+import keski.mert.loan.model.Installment;
+import keski.mert.loan.model.Loan;
 import keski.mert.loan.service.LoanService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,6 +120,45 @@ class LoanControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value(ErrorType.LOAN_NOT_FOUND.getCode()))
                 .andExpect(jsonPath("$.message").value(ErrorType.LOAN_NOT_FOUND.getMessage()));
+    }
+
+    @Test
+    void shouldPayEligibleInstallmentsAndReturnCorrectResponse() throws Exception {
+        Long loanId = 1L;
+        Loan loan = new Loan();
+        loan.setId(loanId);
+        loan.setPaid(false);
+
+        LocalDate now = LocalDate.now();
+        Installment i1 = createInstallment(BigDecimal.valueOf(100), now.plusDays(5));
+        Installment i2 = createInstallment(BigDecimal.valueOf(100), now.plusDays(30));
+        Installment i3 = createInstallment(BigDecimal.valueOf(100), now.plusDays(150));
+
+        i1.setLoan(loan);
+        i2.setLoan(loan);
+        i3.setLoan(loan);
+        loan.setInstallments(List.of(i1, i2, i3));
+
+        BigDecimal payment = BigDecimal.valueOf(200);
+        when(loanService.payLoanInstallments(loanId, new PaymentRequest(payment)))
+                .thenReturn(new PaymentResponse(2, BigDecimal.valueOf(200), false));
+        String json = objectMapper.writeValueAsString(new PaymentRequest(payment));
+
+        mockMvc.perform(post("/v1/loans/" + loanId + "/payments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.numberOfInstallmentsPaid").value(2))
+                .andExpect(jsonPath("$.totalAmountPaid").value(200))
+                .andExpect(jsonPath("$.isLoanPaidCompletely").value(false));
+    }
+
+    private Installment createInstallment(BigDecimal amount, LocalDate dueDate) {
+        Installment installment = new Installment();
+        installment.setAmount(amount);
+        installment.setDueDate(dueDate);
+        installment.setPaid(false);
+        return installment;
     }
 
 }

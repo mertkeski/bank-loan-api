@@ -1,10 +1,7 @@
 package keski.mert.loan.controller;
 
 import jakarta.validation.Valid;
-import keski.mert.loan.dto.LoanQueryInstallmentResponse;
-import keski.mert.loan.dto.LoanQueryResponse;
-import keski.mert.loan.dto.NewLoanRequest;
-import keski.mert.loan.dto.NewLoanResponse;
+import keski.mert.loan.dto.*;
 import keski.mert.loan.service.LoanService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +35,13 @@ public class LoanController {
     public ResponseEntity<List<LoanQueryInstallmentResponse>> getInstallmentsByLoanId(@PathVariable Long loanId) {
         List<LoanQueryInstallmentResponse> installments = loanService.getInstallmentsByLoanId(loanId);
         return ResponseEntity.ok(installments);
+    }
+
+    @PostMapping("/{loanId}/payments")
+    public ResponseEntity<PaymentResponse> payLoanInstallments(@PathVariable Long loanId,
+                                                               @RequestBody PaymentRequest paymentRequest) {
+        PaymentResponse response = loanService.payLoanInstallments(loanId, paymentRequest);
+        return ResponseEntity.ok(response);
     }
 
 }

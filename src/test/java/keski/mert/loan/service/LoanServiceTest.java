@@ -1,11 +1,10 @@
 package keski.mert.loan.service;
 
-import keski.mert.loan.dto.LoanQueryResponse;
-import keski.mert.loan.dto.NewLoanRequest;
-import keski.mert.loan.dto.NewLoanResponse;
+import keski.mert.loan.dto.*;
 import keski.mert.loan.exception.CustomerNotFoundException;
 import keski.mert.loan.exception.NoLoanFoundForCustomerException;
 import keski.mert.loan.model.Customer;
+import keski.mert.loan.model.Installment;
 import keski.mert.loan.model.Loan;
 import keski.mert.loan.repository.CustomerRepository;
 import keski.mert.loan.repository.LoanRepository;
@@ -16,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -106,6 +106,45 @@ class LoanServiceTest {
 
         assertFalse(loans.isEmpty());
         assertEquals(1, loans.size());
+    }
+
+    @Test
+    void shouldPayEligibleInstallmentsCorrectly() {
+        Long loanId = 1L;
+        BigDecimal paymentAmount = BigDecimal.valueOf(230);
+        PaymentRequest request = new PaymentRequest(paymentAmount);
+
+        LocalDate now = LocalDate.now();
+
+        Installment i1 = createInstallment(BigDecimal.valueOf(80), now.plusDays(10)); // eligible
+        Installment i2 = createInstallment(BigDecimal.valueOf(80), now.plusDays(30)); // eligible
+        Installment i3 = createInstallment(BigDecimal.valueOf(80), now.plusDays(60)); // eligible but exceeds payment amoun
+        Installment i4 = createInstallment(BigDecimal.valueOf(80), now.plusDays(120)); // not eligible (4 months ahead)
+
+        Loan loan = new Loan();
+        loan.setInstallments(List.of(i1, i2, i3, i4));
+        loan.setPaid(false);
+
+        when(loanRepository.findById(loanId)).thenReturn(Optional.of(loan));
+
+        PaymentResponse response = loanService.payLoanInstallments(loanId, request);
+
+        assertEquals(2, response.numberOfInstallmentsPaid());
+        assertEquals(BigDecimal.valueOf(160), response.totalAmountPaid());
+        assertFalse(response.isLoanPaidCompletely());
+        assertTrue(i1.isPaid());
+        assertTrue(i2.isPaid());
+        assertFalse(i3.isPaid());
+        assertFalse(i4.isPaid());
+        verify(loanRepository).save(loan);
+    }
+
+    private Installment createInstallment(BigDecimal amount, LocalDate dueDate) {
+        Installment installment = new Installment();
+        installment.setAmount(amount);
+        installment.setDueDate(dueDate);
+        installment.setPaid(false);
+        return installment;
     }
 
 }

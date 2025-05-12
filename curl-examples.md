@@ -81,5 +81,16 @@ If the loan ID doesn't exist:
 }
 ```
 
+---
 
+## Pay Installments for a Loan
+
+Pays upcoming loan installments (within the next 3 months) with the provided payment amount.
+
+```bash
+curl -X POST http://localhost:8080/v1/loans/1/payments \
+     -H "Content-Type: application/json" \
+     -d '{
+           "amount": 890
+         }'
 
