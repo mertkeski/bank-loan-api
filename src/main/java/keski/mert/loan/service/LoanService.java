@@ -12,6 +12,7 @@ import keski.mert.loan.model.Loan;
 import keski.mert.loan.repository.CustomerRepository;
 import keski.mert.loan.repository.LoanRepository;
 import keski.mert.loan.util.MapperUtil;
+import keski.mert.loan.util.UserUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -128,6 +129,7 @@ public class LoanService {
     public List<LoanQueryResponse> getLoansByCustomer(Long customerId) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(CustomerNotFoundException::new);
+        UserUtil.checkAccess(customer.getName());
 
         List<Loan> loans = loanRepository.findByCustomer(customer);
         if (loans.isEmpty()) {
@@ -142,6 +144,7 @@ public class LoanService {
     public List<LoanQueryInstallmentResponse> getInstallmentsByLoanId(Long loanId) {
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(LoanNotFoundException::new);
+        UserUtil.checkAccess(loan.getCustomer().getName());
 
         return loan.getInstallments().stream()
                 .map(MapperUtil::toLoanQueryInstallmentResponse)
@@ -152,6 +155,7 @@ public class LoanService {
     public PaymentResponse payLoanInstallments(Long loanId, PaymentRequest paymentRequest) {
         Loan loan = loanRepository.findById(loanId)
                 .orElseThrow(LoanNotFoundException::new);
+        UserUtil.checkAccess(loan.getCustomer().getName());
 
         BigDecimal amountToPay = paymentRequest.amount();
         BigDecimal totalAmountPaid = BigDecimal.ZERO;

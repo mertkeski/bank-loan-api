@@ -5,6 +5,7 @@ import keski.mert.loan.dto.*;
 import keski.mert.loan.service.LoanService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,24 +21,28 @@ public class LoanController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<NewLoanResponse> createLoan(@RequestBody @Valid NewLoanRequest newLoanRequest) {
         NewLoanResponse response = loanService.createLoan(newLoanRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     public ResponseEntity<List<LoanQueryResponse>> getLoansByCustomer(@RequestParam Long customerId) {
         List<LoanQueryResponse> loans = loanService.getLoansByCustomer(customerId);
         return ResponseEntity.ok(loans);
     }
 
     @GetMapping("/{loanId}/installments")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     public ResponseEntity<List<LoanQueryInstallmentResponse>> getInstallmentsByLoanId(@PathVariable Long loanId) {
         List<LoanQueryInstallmentResponse> installments = loanService.getInstallmentsByLoanId(loanId);
         return ResponseEntity.ok(installments);
     }
 
     @PostMapping("/{loanId}/payments")
+    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     public ResponseEntity<PaymentResponse> payLoanInstallments(@PathVariable Long loanId,
                                                                @RequestBody PaymentRequest paymentRequest) {
         PaymentResponse response = loanService.payLoanInstallments(loanId, paymentRequest);

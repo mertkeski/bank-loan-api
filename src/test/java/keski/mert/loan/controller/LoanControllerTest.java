@@ -1,6 +1,7 @@
 package keski.mert.loan.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import keski.mert.loan.config.TestSecurityConfig;
 import keski.mert.loan.dto.*;
 import keski.mert.loan.exception.CustomerNotFoundException;
 import keski.mert.loan.exception.LoanNotFoundException;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -27,6 +29,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Import(TestSecurityConfig.class)
 @WebMvcTest(LoanController.class)
 class LoanControllerTest {
 

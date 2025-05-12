@@ -7,6 +7,7 @@ public enum ErrorType {
     NO_LOAN_FOUND_FOR_CUSTOMER(102, "No loan found for customer.", HttpStatus.NOT_FOUND),
     LOAN_NOT_FOUND(103, "Loan not found.", HttpStatus.NOT_FOUND),
     INSUFFICIENT_CREDIT_LIMIT(121, "Customer does not have enough credit limit.", HttpStatus.BAD_REQUEST),
+    NOT_AUTHORIZED(130, "You are not authorized to perform this operation for this customer.", HttpStatus.FORBIDDEN),
     INVALID_REQUEST(140, "Validation failed.", HttpStatus.BAD_REQUEST),
     INTERNAL_SERVER_ERROR(150, "Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
 
