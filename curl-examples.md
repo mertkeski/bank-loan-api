@@ -2,6 +2,18 @@
 
 This document provides example `cURL` commands to interact with the Loan API.
 
+User Roles:
+- ADMIN: Can manage loans for any customer.
+- CUSTOMER: Can manage their own loans.
+
+Users:
+- admin (Role: ADMIN) - Username: admin, Password: adminpass
+- Mert (Role: CUSTOMER) - Username: mert, Password: mertpass
+- John (Role: CUSTOMER) - Username: john, Password: johnpass
+
+**Admin user has access to all endpoints while CUSTOMER users only have access to endpoints other than 
+"Create a Loan" and can only operate for their users.**
+
 ---
 
 ## Create a Loan
@@ -11,6 +23,7 @@ Creates a new loan for a customer.
 ```bash
 curl -X POST http://localhost:8080/v1/loans \
      -H "Content-Type: application/json" \
+     -H "Authorization: Basic YWRtaW46YWRtaW5wYXNz" \
      -d '{
            "customerId": 1,
            "interestRate": 0.1,
@@ -24,6 +37,7 @@ If you attempt to create a loan with an unsupported installment count:
 ```bash
 curl -X POST http://localhost:8080/v1/loans \
      -H "Content-Type: application/json" \
+     -H "Authorization: Basic bWVydDptZXJ0cGFzcw==" \
      -d '{
            "customerId": 1,
            "interestRate": 0.1,
@@ -49,7 +63,8 @@ Returns all loans for the given customer ID.
 
 ```bash
 curl -X GET "http://localhost:8080/v1/loans?customerId=1" \
-     -H "Accept: application/json"
+     -H "Accept: application/json" \
+     -H "Authorization: Basic bWVydDptZXJ0cGFzcw=="
 ```
 
 If no loans exist, the response will be:
@@ -69,7 +84,8 @@ Returns the list of installments for a specific loan ID.
 
 ```bash
 curl -X GET "http://localhost:8080/v1/loans/42/installments" \
-     -H "Accept: application/json"
+     -H "Accept: application/json" \
+     -H "Authorization: Basic bWVydDptZXJ0cGFzcw=="
 ```
  
 If the loan ID doesn't exist:
@@ -90,7 +106,8 @@ Pays upcoming loan installments (within the next 3 months) with the provided pay
 ```bash
 curl -X POST http://localhost:8080/v1/loans/1/payments \
      -H "Content-Type: application/json" \
+     -H "Authorization: Basic bWVydDptZXJ0cGFzcw==" \
      -d '{
            "amount": 890
          }'
-
+```
